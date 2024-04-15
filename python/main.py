@@ -3,6 +3,7 @@ import uinput
 
 from pynput.keyboard import Key, Controller
 import serial
+import time
 
 keyboard = Controller()
 
@@ -40,11 +41,16 @@ def keyboard_function(key_code):
     if key_code == 1:  # Space bar key code
         #device.emit_click(uinput.KEY_SPACE)
         keyboard.press(Key.space)
+        time.sleep(0.05)
         keyboard.release(Key.space)
-    elif key_code == 2:
-        device.emit_click(uinput.KEY_RIGHT)
-    elif key_code == 3:
-        device.emit_click(uinput.KEY_LEFT)
+    elif key_code == 2:  # Right arrow
+        keyboard.press(Key.right)
+        time.sleep(0.05)  # Short delay to simulate press duration
+        keyboard.release(Key.right)
+    elif key_code == 3:  # Left arrow
+        keyboard.press(Key.left)
+        time.sleep(0.05)  # Short delay to simulate press duration
+        keyboard.release(Key.left)
 
 try:
     # Sync package
@@ -53,16 +59,16 @@ try:
         while True:
             sync_byte = ser.read(1)
             if sync_byte == b'\xff':
-                break
+                break                                                                                   
 
         # Read next 3 bytes from UART after sync byte
-        data = ser.read(3)
-        if len(data) == 3:
-            axis, value = parse_data(data)
-            if axis in [0, 1]:  # Mouse movement
-                move_mouse(axis, value)
-            elif axis == 3:  # Keyboard control
-                keyboard_function(value)
+        data = ser.read(3)                                    
+        if len(data) == 3:                                                                                                  
+            axis, value = parse_data(data)               
+            if axis in [0, 1]:  # Mouse movement                        
+                move_mouse(axis, value)                                                                                                                                                                                                                                                                                   
+            elif axis == 3:  # Keyboard control                                                                                                                                                     
+                keyboard_function(value)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
 
 except KeyboardInterrupt:
     print("Program terminated by user")

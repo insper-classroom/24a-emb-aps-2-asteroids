@@ -136,7 +136,7 @@ void shooting_task(void *p) {
         }
     }
 }
-   
+                        
 int main() {
     stdio_init_all();
     xButtonSemaphore = xSemaphoreCreateBinary();
@@ -149,4 +149,4 @@ int main() {
     while (true)
         ;
 }
-                       
+                                     
