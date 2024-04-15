@@ -55,6 +55,10 @@ def keyboard_function(key_code):
         keyboard.press(Key.up)
     elif key_code == 5:  # Thrust deactivate (release up arrow)
         keyboard.release(Key.up)
+    elif key_code == 6:  # Hyperspace (press shift)
+        keyboard.press(Key.shift)
+        time.sleep(0.05)  # Press duration for shift (hyperspace)
+        keyboard.release(Key.shift)
 
 try:
     # Sync package

@@ -14,6 +14,7 @@
 #include "hc06.h"
 
 #define SHOOTING_BUTTON 5  // Shooting button
+#define HYPERSPACE_BUTTON 15
 #define ENCA_PIN 7
 #define ENCB_PIN 6
 #define THRUST_PIN 26 
@@ -25,7 +26,8 @@
 #define UART_TX_PIN 0
 #define UART_RX_PIN 1
 
-SemaphoreHandle_t xButtonSemaphore;
+SemaphoreHandle_t xShootingSemaphore;
+SemaphoreHandle_t xHyperspaceSemaphore;
 
 // void hc06_task(void *p) {
 //     uart_init(HC06_UART_ID, HC06_BAUD_RATE);
@@ -46,7 +48,9 @@ SemaphoreHandle_t xButtonSemaphore;
 
 void btn_callback(uint gpio, uint32_t events) {
     if (gpio == SHOOTING_BUTTON) {
-        xSemaphoreGiveFromISR(xButtonSemaphore, NULL);
+        xSemaphoreGiveFromISR(xShootingSemaphore, NULL);
+    } else if (gpio == HYPERSPACE_BUTTON) {
+        xSemaphoreGiveFromISR(xHyperspaceSemaphore, NULL);
     }
 }
 
@@ -125,7 +129,7 @@ void shooting_task(void *p) {
 
     // Wait for button press event
     while (1) {
-        if (xSemaphoreTake(xButtonSemaphore, portMAX_DELAY) == pdTRUE) {
+        if (xSemaphoreTake(xShootingSemaphore, portMAX_DELAY) == pdTRUE) {
             //printf("BANG\n");
             uart_putc_raw(uart0, 3);
             uart_putc_raw(uart0, 1);
@@ -169,14 +173,35 @@ void thrust_task(void *p) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
+
+void hyperspace_task(void *p) {
+    gpio_init(HYPERSPACE_BUTTON);
+    gpio_set_dir(HYPERSPACE_BUTTON, GPIO_IN);
+    gpio_pull_up(HYPERSPACE_BUTTON);  
+    gpio_set_irq_enabled_with_callback(HYPERSPACE_BUTTON, GPIO_IRQ_EDGE_FALL, true, &btn_callback);
+
+    while (1) {
+        if (xSemaphoreTake(xHyperspaceSemaphore, portMAX_DELAY) == pdTRUE) {
+            //printf("HYPERSPACE\n");
+            uart_putc_raw(uart0, 3);
+            uart_putc_raw(uart0, 6);
+            uart_putc_raw(uart0, 0);
+            uart_putc_raw(uart0, -1);
+            vTaskDelay(pdMS_TO_TICKS(200));
+            gpio_set_irq_enabled(HYPERSPACE_BUTTON, GPIO_IRQ_EDGE_FALL, true);
+        }
+    }
+}
                         
 int main() {
     stdio_init_all();
-    xButtonSemaphore = xSemaphoreCreateBinary();
+    xShootingSemaphore = xSemaphoreCreateBinary();
+    xHyperspaceSemaphore = xSemaphoreCreateBinary();
 
     xTaskCreate(shooting_task, "shooting_task", 4096, NULL, 1, NULL);
     xTaskCreate(rotate_task, "rotate_task", 4096, NULL, 1, NULL);
     xTaskCreate(thrust_task, "thrust_task", 4096, NULL, 1, NULL);
+    xTaskCreate(hyperspace_task, "hyperspace_task", 4096, NULL, 1, NULL);
 
     vTaskStartScheduler();
 
