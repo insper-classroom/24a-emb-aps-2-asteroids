@@ -51,6 +51,10 @@ def keyboard_function(key_code):
         keyboard.press(Key.left)
         time.sleep(0.05)  # Short delay to simulate press duration
         keyboard.release(Key.left)
+    elif key_code == 4:  # Thrust activate (press up arrow)
+        keyboard.press(Key.up)
+    elif key_code == 5:  # Thrust deactivate (release up arrow)
+        keyboard.release(Key.up)
 
 try:
     # Sync package

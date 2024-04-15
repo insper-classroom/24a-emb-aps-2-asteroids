@@ -5,7 +5,7 @@
 #include <task.h>
 #include <semphr.h>
 #include <queue.h>
-
+#include "hardware/adc.h"
 #include <string.h>
 
 #include "pico/stdlib.h"
@@ -16,6 +16,7 @@
 #define SHOOTING_BUTTON 5  // Shooting button
 #define ENCA_PIN 7
 #define ENCB_PIN 6
+#define THRUST_PIN 26 
 
 #define UART_ID uart0
 #define BAUD_RATE 115200
@@ -136,6 +137,38 @@ void shooting_task(void *p) {
         }
     }
 }
+
+void thrust_task(void *p) {
+    adc_init();
+    adc_gpio_init(THRUST_PIN);
+    uint16_t threshold = 2000;  
+    bool thrust_active = false;  // State variable to track thrust status
+
+    while (1) {
+        adc_select_input(0);  // Select ADC0
+        uint16_t result = adc_read();
+        //printf("-----%d-------\n", result);
+
+        if (result > threshold && !thrust_active) {
+            // If the result is above the threshold and thrust is not already active
+            uart_putc_raw(uart0, 3);
+            uart_putc_raw(uart0, 4);
+            uart_putc_raw(uart0, 0);
+            uart_putc_raw(uart0, -1);
+            thrust_active = true;  // Set thrust as active
+            //printf("THRUST ACTIVATED\n");
+        } else if (result <= threshold && thrust_active) {
+            // If the result is below the threshold and thrust is currently active
+            uart_putc_raw(uart0, 3);
+            uart_putc_raw(uart0, 5);
+            uart_putc_raw(uart0, 0);
+            uart_putc_raw(uart0, -1);
+            thrust_active = false;  // Set thrust as inactive
+            //printf("THRUST DEACTIVATED\n");
+        }
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
                         
 int main() {
     stdio_init_all();
@@ -143,10 +176,11 @@ int main() {
 
     xTaskCreate(shooting_task, "shooting_task", 4096, NULL, 1, NULL);
     xTaskCreate(rotate_task, "rotate_task", 4096, NULL, 1, NULL);
+    xTaskCreate(thrust_task, "thrust_task", 4096, NULL, 1, NULL);
 
     vTaskStartScheduler();
 
     while (true)
         ;
 }
-                                     
+                                        
