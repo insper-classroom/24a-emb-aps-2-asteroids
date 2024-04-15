@@ -84,9 +84,17 @@ void rotate_task(void *p) {
             if (sum == last_sum) {
                 if (++debounce_counter > 1) {  // Check if the same movement is read consecutively
                     if (sum == 1) {
-                        printf("RIGHT\n");
+                        //printf("RIGHT\n");
+                        uart_putc_raw(uart0, 3);
+                        uart_putc_raw(uart0, 2);
+                        uart_putc_raw(uart0, 0);
+                        uart_putc_raw(uart0, -1);
                     } else if (sum == -1) {
-                        printf("LEFT\n");
+                        //printf("LEFT\n");
+                        uart_putc_raw(uart0, 3);
+                        uart_putc_raw(uart0, 3);
+                        uart_putc_raw(uart0, 0);
+                        uart_putc_raw(uart0, -1);
                     }
                     debounce_counter = 0;  // Reset the counter after confirming the direction
                 }
@@ -99,7 +107,7 @@ void rotate_task(void *p) {
         vTaskDelay(pdMS_TO_TICKS(1)); // Poll every 1 ms to improve responsiveness
     }
 }
-
+  
 
 void shooting_task(void *p) {
     // Initialize GPIO pin for button input
@@ -128,7 +136,7 @@ void shooting_task(void *p) {
         }
     }
 }
-
+   
 int main() {
     stdio_init_all();
     xButtonSemaphore = xSemaphoreCreateBinary();
@@ -141,4 +149,4 @@ int main() {
     while (true)
         ;
 }
-       
+                       

@@ -1,6 +1,11 @@
 import serial
 import uinput
 
+from pynput.keyboard import Key, Controller
+import serial
+
+keyboard = Controller()
+
 # Setup Serial Connection
 ser = serial.Serial('/dev/ttyACM0', 115200)
 
@@ -10,6 +15,8 @@ device = uinput.Device([
     uinput.BTN_RIGHT,
     uinput.REL_X,
     uinput.REL_Y,
+    uinput.KEY_LEFT,
+    uinput.KEY_RIGHT,
     uinput.KEY_SPACE  # Include spacebar key for keyboard functionality
 ])
 
@@ -31,7 +38,13 @@ def move_mouse(axis, value):
 
 def keyboard_function(key_code):
     if key_code == 1:  # Space bar key code
-        device.emit_click(uinput.KEY_SPACE)
+        #device.emit_click(uinput.KEY_SPACE)
+        keyboard.press(Key.space)
+        keyboard.release(Key.space)
+    elif key_code == 2:
+        device.emit_click(uinput.KEY_RIGHT)
+    elif key_code == 3:
+        device.emit_click(uinput.KEY_LEFT)
 
 try:
     # Sync package
