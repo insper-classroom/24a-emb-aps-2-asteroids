@@ -8,7 +8,8 @@ import time
 keyboard = Controller()
 
 # Setup Serial Connection
-ser = serial.Serial('/dev/ttyACM0', 115200)
+#ser = serial.Serial('/dev/ttyACM0', 115200)
+ser = serial.Serial('/dev/rfcomm0', 9600) 
 
 # Create new mouse device
 device = uinput.Device([
@@ -64,15 +65,18 @@ try:
     # Sync package
     while True:
         print('Waiting for sync package...')
+        
+        #parse_data(data)  
         while True:
+            #print("travado")
             sync_byte = ser.read(1)
             if sync_byte == b'\xff':
                 break                                                                                   
 
         # Read next 3 bytes from UART after sync byte
-        data = ser.read(3)                                    
+        data = ser.read(3)                                   
         if len(data) == 3:                                                                                                  
-            axis, value = parse_data(data)               
+            axis, value = parse_data(data)                    
             if axis in [0, 1]:  # Mouse movement                        
                 move_mouse(axis, value)                                                                                                                                                                                                                                                                                   
             elif axis == 3:  # Keyboard control                                                                                                                                                     
