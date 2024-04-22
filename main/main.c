@@ -19,6 +19,8 @@
 #define ENCB_PIN 6
 #define THRUST_PIN 26 
 
+
+
 #define UART_ID uart1
 #define BAUD_RATE 9600
 
@@ -29,21 +31,6 @@
 SemaphoreHandle_t xShootingSemaphore;
 SemaphoreHandle_t xHyperspaceSemaphore;
 
-// void hc06_task(void *p) {
-//     uart_init(HC06_UART_ID, HC06_BAUD_RATE);
-//     gpio_set_function(HC06_TX_PIN, GPIO_FUNC_UART);
-//     gpio_set_function(HC06_RX_PIN, GPIO_FUNC_UART);
-//     hc06_init("aps2_legal", "1234");
-
-//     while (true) {
-//         uart_puts(HC06_UART_ID, "OLAAA ");
-//         vTaskDelay(pdMS_TO_TICKS(100));
-//     }
-// }
-
-// PUT THE FOLLOWING IN MAIN FUNCTION:
-    //printf("Start bluetooth task\n");
-    //xTaskCreate(hc06_task, "UART_Task 1", 4096, NULL, 1, NULL);
 
 
 void btn_callback(uint gpio, uint32_t events) {
@@ -60,11 +47,7 @@ void hc06_initialization(){
     gpio_set_function(HC06_RX_PIN, GPIO_FUNC_UART);
     hc06_init("asteroids", "8007");
 }
-void send_number_over_uart(int number) {
-    char buffer[32];  // Buffer to hold the string representation of the number
-    snprintf(buffer, sizeof(buffer), "%d", number);  // Convert the integer to a string
-    uart_puts(HC06_UART_ID, buffer);  // Send the string over UART
-}
+
 
 void rotate_task(void *p) {
     static const int8_t state_table[] = {
@@ -74,9 +57,7 @@ void rotate_task(void *p) {
         0,  1, -1,  0
     };
     uint8_t enc_state = 0; // Current state of the encoder
-    int8_t last_encoded = 0; // Last encoded state
-    int8_t encoded;
-    int sum;
+    
     int last_sum = 0; // Last non-zero sum to filter out noise
     int debounce_counter = 0; // Debounce counter
 
@@ -90,13 +71,11 @@ void rotate_task(void *p) {
     gpio_pull_up(ENCA_PIN);  // Enable internal pull-up
     gpio_pull_up(ENCB_PIN);  // Enable internal pull-up
 
-    last_encoded = (gpio_get(ENCA_PIN) << 1) | gpio_get(ENCB_PIN);
-    //hc06_initialization();
-
+    
     while (1) {
-        encoded = (gpio_get(ENCA_PIN) << 1) | gpio_get(ENCB_PIN);
+        int8_t encoded = (gpio_get(ENCA_PIN) << 1) | gpio_get(ENCB_PIN);
         enc_state = (enc_state << 2) | encoded;
-        sum = state_table[enc_state & 0x0f];
+        int sum = state_table[enc_state & 0x0f];
 
         if (sum != 0) {
             if (sum == last_sum) {
@@ -107,20 +86,12 @@ void rotate_task(void *p) {
                         uart_putc_raw(uart1, 2);
                         uart_putc_raw(uart1, 0);
                         uart_putc_raw(uart1, -1);
-                        //send_number_over_uart(3);
-                        //send_number_over_uart(2);
-                        //send_number_over_uart(0);
-                        //send_number_over_uart(-1);
                     } else if (sum == -1) {
                         //printf("LEFT\n");
                         uart_putc_raw(uart1, 3);
                         uart_putc_raw(uart1, 3);
                         uart_putc_raw(uart1, 0);
                         uart_putc_raw(uart1, -1);
-                        //send_number_over_uart(3);
-                        //send_number_over_uart(3);
-                        //send_number_over_uart(0);
-                        //send_number_over_uart(-1);
                     }
                     debounce_counter = 0;  // Reset the counter after confirming the direction
                 }
@@ -147,7 +118,7 @@ void shooting_task(void *p) {
 
     //initialize_uart();
 
-    uint8_t message[4];
+    
 
     // Wait for button press event
     while (1) {
@@ -157,10 +128,6 @@ void shooting_task(void *p) {
             uart_putc_raw(uart1, 1);
             uart_putc_raw(uart1, 0);
             uart_putc_raw(uart1, -1);
-            //send_number_over_uart(3);
-            //send_number_over_uart(1);
-            //send_number_over_uart(0);
-            //send_number_over_uart(-1);
             // Debouncing by delaying the re-enable of the interrupt
             vTaskDelay(pdMS_TO_TICKS(200));
             gpio_set_irq_enabled(SHOOTING_BUTTON, GPIO_IRQ_EDGE_FALL, true);
@@ -186,10 +153,7 @@ void thrust_task(void *p) {
             uart_putc_raw(uart1, 4);
             uart_putc_raw(uart1, 0);
             uart_putc_raw(uart1, -1);
-            //send_number_over_uart(3);
-            //send_number_over_uart(4);
-            //send_number_over_uart(0);
-            //send_number_over_uart(-1);
+
             thrust_active = true;  // Set thrust as active
             //printf("THRUST ACTIVATED\n");
         } else if (result <= threshold && thrust_active) {
@@ -198,10 +162,7 @@ void thrust_task(void *p) {
             uart_putc_raw(uart1, 5);
             uart_putc_raw(uart1, 0);
             uart_putc_raw(uart1, -1);
-            //send_number_over_uart(3);
-            //send_number_over_uart(5);
-            //send_number_over_uart(0);
-            //send_number_over_uart(-1);
+
             thrust_active = false;  // Set thrust as inactive
             //printf("THRUST DEACTIVATED\n");
         }
@@ -223,10 +184,6 @@ void hyperspace_task(void *p) {
             uart_putc_raw(uart1, 6);
             uart_putc_raw(uart1, 0);
             uart_putc_raw(uart1, -1);
-            //send_number_over_uart(3);
-            //send_number_over_uart(6);
-            //send_number_over_uart(0);
-            //send_number_over_uart(-1);
             vTaskDelay(pdMS_TO_TICKS(200));
             gpio_set_irq_enabled(HYPERSPACE_BUTTON, GPIO_IRQ_EDGE_FALL, true);
         }
@@ -239,10 +196,12 @@ int main() {
     xShootingSemaphore = xSemaphoreCreateBinary();
     xHyperspaceSemaphore = xSemaphoreCreateBinary();
 
+
     xTaskCreate(shooting_task, "shooting_task", 4096, NULL, 1, NULL);
     xTaskCreate(rotate_task, "rotate_task", 4096, NULL, 1, NULL);
     xTaskCreate(thrust_task, "thrust_task", 4096, NULL, 1, NULL);
     xTaskCreate(hyperspace_task, "hyperspace_task", 4096, NULL, 1, NULL);
+
 
     vTaskStartScheduler();
 
