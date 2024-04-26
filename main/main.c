@@ -1,32 +1,7 @@
 /*
  * LED blink with FreeRTOS
  */
-#include <FreeRTOS.h>
-#include <task.h>
-#include <semphr.h>
-#include <queue.h>
-#include "hardware/adc.h"
-#include <string.h>
-
-#include "pico/stdlib.h"
-#include <stdio.h>
-
-#include "hc06.h"
-
-#define SHOOTING_BUTTON 8  // Shooting button
-#define HYPERSPACE_BUTTON 15
-#define ENCA_PIN 7
-#define ENCB_PIN 6
-#define THRUST_PIN 26 
-
-
-
-#define UART_ID uart1
-#define BAUD_RATE 9600
-
-// GPIO pins used for UART
-#define UART_TX_PIN 0
-#define UART_RX_PIN 1
+#include "main.h"
 
 SemaphoreHandle_t xShootingSemaphore;
 SemaphoreHandle_t xHyperspaceSemaphore;
