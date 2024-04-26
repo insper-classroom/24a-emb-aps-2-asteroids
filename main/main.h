@@ -1,5 +1,6 @@
 /* Main header file for FreeRTOS LED blink project */
-
+#ifndef MAIN_H
+#define MAIN_H
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>
@@ -24,3 +25,4 @@
 // Function declarations
 void btn_callback(uint gpio, uint32_t events);
 void hc06_initialization();
+#endif // MAIN_H

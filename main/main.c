@@ -1,7 +1,7 @@
 /*
  * LED blink with FreeRTOS
  */
-#include "controller.h"
+#include "main.h"
 
 SemaphoreHandle_t xShootingSemaphore;
 SemaphoreHandle_t xHyperspaceSemaphore;
