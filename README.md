@@ -3,7 +3,7 @@
 Projeto feito em uma rp2040 para a matéria de computação embarcada no insper. 
 Segue o diagrama de blocos explicativo do firmware:
 ![Diagram](diagrama.png)
-Para mais informações vou disponibilizar aqui ao final um video sobre o controle o o link no [Hackaday](https://hackaday.io/project/195786-asteroids-rp2040-controller)!
+Para mais informações vou disponibilizar aqui ao final um [video](https://youtu.be/ct4SKozNZgc) sobre o controle o o link no [Hackaday](https://hackaday.io/project/195786-asteroids-rp2040-controller)!
 
 
 
